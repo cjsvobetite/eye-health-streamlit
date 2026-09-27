@@ -384,26 +384,31 @@ def generate_result(responses: dict[str, Any], device_id: str) -> dict[str, Any]
     quote_theme = theme_from_risk(risk)
     quote = choose_quote(quote_theme)
 
-    supabase = get_supabase_client()
-    if supabase:
-        try:
-            supabase.table("survey_responses").insert(
-                {
-                    "responses": responses,
-                    "risk": risk,
-                    "advice": advice,
-                    "device_id": device_id,
-                }
-            ).execute()
-        except Exception as error:
-            st.warning(f"The result was generated, but it could not be saved: {error}")
+supabase = get_supabase_client()
 
-    return {
-        "risk": risk,
-        "advice": advice,
-        "daily_quote": quote,
-        "recommended_quote_theme": quote_theme,
-    }
+if not supabase:
+    st.warning(
+        "Supabase 저장이 비활성화되어 있습니다. "
+        "Streamlit Secrets의 SUPABASE_URL 및 "
+        "SUPABASE_SERVICE_ROLE_KEY를 확인하세요."
+    )
+else:
+    try:
+        result = supabase.table("survey_responses").insert(
+            {
+                "responses": responses,
+                "risk": risk,
+                "advice": advice,
+                "device_id": device_id,
+            }
+        ).execute()
+
+        print("Supabase insert success:", result.data)
+        st.success("결과가 Supabase에 저장되었습니다.")
+
+    except Exception as error:
+        print("Supabase insert failed:", repr(error))
+        st.warning(f"결과는 생성됐지만 저장에 실패했습니다: {error}")
 
 
 def initialize_state() -> None:
