@@ -39,6 +39,7 @@ SURVEY_QUESTIONS = [
         "type": "radio",
         "options": [
             "East Asian",
+            "Asian (other)",
             "African / African American",
             "Hispanic / Latino",
             "White / Caucasian",
